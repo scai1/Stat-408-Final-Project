@@ -1,0 +1,91 @@
+---
+title: "Stat 408 Final Project"
+author: "Stone Cai"
+date: "2024-03-23"
+output:
+  pdf_document: default
+  html_document: default
+---
+Introduction
+
+-
+
+
+
+
+
+```{r }
+
+salary<- read.csv("C:/Users/stone/Documents/Stat 408/Final Project/ds_salaries.csv")
+
+View(salary)
+
+summary(salary)
+
+```
+Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and recode certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
+
+1.work_year:	The year the salary was paid.
+
+2.experience_level:	The experience level in the job during the year with the following possible values: (EN) Entry-level / Junior (MI) Mid-level / Intermediate (SE) Senior-level / Expert (EX) Executive-level / Director.
+
+3.employment_type:	The type of employment for the role: PT Part-time FT Full-time CT Contract FL Freelance.
+
+4.job_title:	The role worked in during the year.
+
+5.salary:	The total gross salary amount paid.
+
+6.salary_currency	The currency of the salary paid as an ISO 4217 currency code.
+
+7.salary_in_usd	The salary in USD (FX rate divided by avg. USD rate for the respective year via fxdata.foorilla.com).
+
+8.employee_residence	Employee's primary country of residence in during the work year as an ISO 3166 country code.
+
+9.Remote_ratio	The overall amount of work done remotely, possible values are as follows: 0 No remote work (less than 20%) 50 Partially remote 100 Fully remote (more than 80%).
+
+10.company_location	The country of the employer's main office or contracting branch as an ISO 3166 country code.
+
+11.company_size	The average number of people that worked for the company during the year: S less than 50 employees (small) M 50 to 250 employees (medium) L more than 250 employees (large)
+
+From this initial summary I notice several issues.There are several potential redundant or irrelevant columns. As I've discussed in my introduction, I'm interested in data scientists' salary as the response variable and utilizing various predictors to determine what are the key factors that determines a data scientist's salary. Although it is nice to understand the currency that all employees in this data set are paid in, the variable salary_in_usd is the only relevant column as I can compare all the salaries in the same currency. Thus, I will remove both salary_currency and salary variables from the dataset, as the information is all contained within salary_in_USD. 
+
+```{r }
+salary1 <- subset( salary, select = -c(salary,salary_currency) )
+##View(salary1)
+
+table(salary1$experience_level)
+table(salary1$job_title)
+
+table(salary1$employment_type)
+table(salary1$employee_residence)
+table(salary1$remote_ratio)
+table(salary1$company_location)
+table(salary1$company_size)
+```
+Here, I'm identifying every unique value in the following columns: experience level, job title, and employment type. 
+```{r }
+salary1$experience_level <- factor(salary1$experience_level)
+levels(salary1$experience_level) <- c("MI", "SE", "EN", "EX")
+
+levels(salary1$work_year) <- c("2020", "2021", "2022", "2023")
+
+levels(salary1$employment_type) <- c("FT", "CT", "FL", "PT")
+
+levels(salary1$remote_ratio)<- c("0", "50", "100" )
+
+levels(salary1$company_size)<- c("S", "M", "L" )
+
+summary(salary1)
+
+```
+
+
+```{r }
+
+barplot(salary1$work_year)
+
+hist(salary1$work_year, xlab = "Distribution of work year", breaks = 5)
+
+```
+Here, I will begin exploratory data analysis on each 
+
