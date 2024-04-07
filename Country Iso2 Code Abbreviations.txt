@@ -1,0 +1,78 @@
+AE- United Arab Emirates
+AL-Albania (EU)
+AM- Armenia 
+AR:Argentina 
+AS: American Samoa
+AT: Austria
+AU: Australia 
+BA: Bosnia and Herzegovina (EU)
+BE:Belgium (EU)
+BG: Bulgaria (EU)  
+BO: Bolivia
+BR: Brazil
+CA: Canada (US)
+CF: Central African Republic
+CH: Switzerland (EU)
+CL: Chile
+CN: China
+CO: Colombia
+CR: Costa Rica
+CY: Cyprus
+CZ:Czech (EU)
+DE: Germany ( EU)
+DK: Denmark (EU)
+DO: Dominican (Republic)
+DZ: Alegeria
+EE: Estonia (EU)
+EG: Egypt
+ES: Spain( EU)
+FI: Finland (EU)
+FR: France (EU)  
+GB: United Kingdom (EU)
+GH: Ghana
+GR: Greece ( EU)
+HK: Hong Kong
+HN: Hondouras
+HR: Croatia (EU)
+HU: Hungary (EU)
+ID: Indonesia
+IE: Ireland (EU)
+IL: Israel
+IN: India
+IQ: Iraq
+IR: Iran
+IT: Italy (EU)
+JE: Jersey (EU)
+JP: Japan
+KE: Kenya
+KW: Kuwait
+LT: Lithuania (EU)
+LU: Luxembour (EU)
+LV: Latvia (EU)
+MA: Moroco
+MD: Moldova (EU)
+MK: Macedonia (EU)
+MT: Malta(EU)
+MX:Mexico
+MY: Malaysia
+NG: Nigeria
+NL: Netherlands (EU)
+NZ: New Zealand
+PH: Phillipines
+PL: Poland (EU)
+PK: Pakistan 
+PR: Puerto Rico
+PT: Portugal (EU)
+RO: Romania (EU)
+RS: Serbia(EU)
+RU: Russia
+SE: Sweeden (EU)
+SG: Singapore
+SI: Slovenia(EU)
+SK: Slovakia(EU)
+TH: Thailand
+TN: Tunisia
+TR: Turkey (EU)
+UA: Ukraine (EU)
+UZ: Uzbekistan
+VN: Vietnam
