@@ -62,30 +62,112 @@ table(salary1$remote_ratio)
 table(salary1$company_location)
 table(salary1$company_size)
 ```
+
 Here, I'm identifying every unique value in the following columns: experience level, job title, and employment type. 
+
+
 ```{r }
 salary1$experience_level <- factor(salary1$experience_level)
 levels(salary1$experience_level) <- c("MI", "SE", "EN", "EX")
 
+salary1$work_year <- factor(salary1$work_year)
 levels(salary1$work_year) <- c("2020", "2021", "2022", "2023")
 
+salary1$employment_type <- factor(salary1$employment_type)
 levels(salary1$employment_type) <- c("FT", "CT", "FL", "PT")
 
+salary1$remote_ratio <- factor(salary1$remote_ratio)
 levels(salary1$remote_ratio)<- c("0", "50", "100" )
 
+salary1$company_size <- factor(salary1$company_size)
 levels(salary1$company_size)<- c("S", "M", "L" )
 
 summary(salary1)
 
 ```
+These last 3 variables provides 
+
+
+
 
 
 ```{r }
 
-barplot(salary1$work_year)
+salary1[ , 'employee_residence1'] <- NA
+salary1[ , 'company_location1'] <- NA
 
-hist(salary1$work_year, xlab = "Distribution of work year", breaks = 5)
+
+
+library(dplyr)
+
+for(i in 1:length(salary1$employee_residence))
+{ 
+  if(salary1$employee_residence[i]=="CA" || salary1$employee_residence[i]=="US" )
+  {
+    salary1$employee_residence1[i] <- "US"
+   
+  }
+  
+   
+ else if(salary1$employee_residence[i]== "ES" || salary1$employee_residence[i]== "DE" || salary1$employee_residence[i]== "AL"|| salary1$employee_residence[i]== "BA"|| salary1$employee_residence[i]== "BE"|| salary1$employee_residence[i]== "BG"|| salary1$employee_residence[i]== "CH"|| salary1$employee_residence[i]== "CZ"|| salary1$employee_residence[i]== "DK"|| salary1$employee_residence[i]== "EE"|| salary1$employee_residence[i]== "FI"|| salary1$employee_residence[i]== "FR"|| salary1$employee_residence[i]== "GB"|| salary1$employee_residence[i]== "GR"|| salary1$employee_residence[i]== "HR"|| salary1$employee_residence[i]== "HU"|| salary1$employee_residence[i]== "IE"|| salary1$employee_residence[i]== "IT"|| salary1$employee_residence[i]== "JE" || salary1$employee_residence[i]== "LT" || salary1$employee_residence[i]== "LU" || salary1$employee_residence[i]== "LV" || salary1$employee_residence[i]== "MD" || salary1$employee_residence[i]== "MK" || salary1$employee_residence[i]== "MT" || salary1$employee_residence[i]== "NL" || salary1$employee_residence[i]== "PL" || salary1$employee_residence[i]== "PT"|| salary1$employee_residence[i]== "RO"|| salary1$employee_residence[i]== "RS" || salary1$employee_residence[i]== "SE"|| salary1$employee_residence[i]== "SI" || salary1$employee_residence[i]== "SK" || salary1$employee_residence[i]== "TR"|| salary1$employee_residence[i]== "UA")
+  
+  {
+    salary1$employee_residence1[i] <- "EU"
+   
+  }
+  
+ else
+  {
+    salary1$employee_residence1[i] <- "OT"
+   
+  }
+  
+  
+}
+  
+######################### cleaning company_location data  
+
+for(i in 1:length(salary1$company_location))
+{ 
+  if(salary1$company_location[i]=="CA" || salary1$company_location[i]=="US" )
+  {
+    salary1$company_location1[i] <- "US"
+   
+  }
+  
+   
+ else if(salary1$company_location[i]== "ES" || salary1$company_location[i]== "DE" || salary1$company_location[i]== "AL"|| salary1$company_location[i]== "BA"|| salary1$company_location[i]== "BE"|| salary1$company_location[i]== "BG"|| salary1$company_location[i]== "CH"|| salary1$company_location[i]== "CZ"|| salary1$company_location[i]== "DK"|| salary1$company_location[i]== "EE"|| salary1$company_location[i]== "FI"|| salary1$company_location[i]== "FR"|| salary1$company_location[i]== "GB"|| salary1$company_location[i]== "GR"|| salary1$company_location[i]== "HR"|| salary1$company_location[i]== "HU"|| salary1$company_location[i]== "IE"|| salary1$company_location[i]== "IT"|| salary1$company_location[i]== "JE" || salary1$company_location[i]== "LT" || salary1$company_location[i]== "LU" || salary1$company_location[i]== "LV" || salary1$company_location[i]== "MD" || salary1$company_location[i]== "MK" || salary1$company_location[i]== "MT" || salary1$company_location[i]== "NL" || salary1$company_location[i]== "PL" || salary1$company_location[i]== "PT"|| salary1$company_location[i]== "RO"|| salary1$company_location[i]== "RS" || salary1$company_location[i]== "SE"|| salary1$company_location[i]== "SI" || salary1$company_location[i]== "SK" || salary1$company_location[i]== "TR"|| salary1$company_location[i]== "UA")
+  
+  {
+    salary1$company_location1[i] <- "EU"
+   
+  }
+  
+ else
+  {
+    salary1$company_location1[i] <- "OT"
+   
+  }
+  
+  
+}
+  
+
+
+
+
+
+
+
+##View(salary1)
+table(salary1$employee_residence1)
+table(salary1$company_location1)
+
+salary2<- subset( salary1, select = -c(employee_residence,company_location) )
+View(salary2)
 
 ```
-Here, I will begin exploratory data analysis on each 
+First, I created a text document to match full country names to their 2 letter code names. (See attached .txt doucment in github). After, I match country names to their 2 letter code names, I determined which countries were part of Europe, US/Canada, and not either of the first 2. 
+
+Here, I collapsed the variable of employee residence and company location. First, I create 2 new columns called employee_residence1 and company_location1 as I will append these re-coded values to these new columns. I combined Canada counts with US counts under "US". I believe fundamentally, Canadian tech companies function very similarly to the US, operate under the same language,etc. So even though I don't necessarily believe Canadian data science salaries are homogeneous to US data science salaries, I believe this makes more sense then coding  Canada as "Other".  I also collapsed all European countries into one EU factor and the remaining countries will fall under "OT" or other. From the frequency count after I re-coded both variables I believe this is a reasonable way to re-code the observations. Here, I believe I have enough observations for my standard errors to be reasonable for reach factor. I could further break down the remaining countries geographically, but I'm afraid I have too few observations for these new factors and thus have standard errors that are extremely large. I'm choosing to collapse the variables like this because  the vast majority of the ~3800 observations are from the US/Canada in both cases. Finally, I drop my original data frame columns from the re-coded dataframe.Note: One additional issue I believe I have here is multi-collinearity. The vast majority of people in this data set typically live in the same country as the Company that they work for. Obviously, these variables are not mirrored, but there's very likely some redundancy here. I will verify using a VIF calculation in a later section in this report, but I will likely have to drop either (employee_residence1 or company_location1) in my final model. 
 
