@@ -8,12 +8,19 @@ output:
 ---
 Introduction
 
--
+As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? 
+
+To approach this problem, I am dividing this report into these sections:
+
+1. Data Cleaning+ Collapsing Variables. 
+2. Exploratory data analysis
+3. Model building+ selection
+4. Model refinement (Checking regression assumptions and identifying outliers)
 
 
 
-
-
+Section 1: Data Cleaning and Collapsing Variables
+Here, I am going to recode, clean, and collapse variables appropriately in a way that will allow me to do analysis as I see fit.
 ```{r }
 
 salary<- read.csv("C:/Users/stone/Documents/Stat 408/Final Project/ds_salaries.csv")
@@ -23,36 +30,43 @@ View(salary)
 summary(salary)
 
 ```
-Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and recode certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
+Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and re-code certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
 
 1.work_year:	The year the salary was paid.
 
 2.experience_level:	The experience level in the job during the year with the following possible values: (EN) Entry-level / Junior (MI) Mid-level / Intermediate (SE) Senior-level / Expert (EX) Executive-level / Director.
 
-3.employment_type:	The type of employment for the role: PT Part-time FT Full-time CT Contract FL Freelance.
+3.employment_type:	The type of employment for the role: PT: Part-time FT: Full-time CT: Contract FL: Freelance.
 
 4.job_title:	The role worked in during the year.
 
 5.salary:	The total gross salary amount paid.
 
-6.salary_currency	The currency of the salary paid as an ISO 4217 currency code.
+6.salary_currency:	The currency of the salary paid as an ISO 4217 currency code.
 
-7.salary_in_usd	The salary in USD (FX rate divided by avg. USD rate for the respective year via fxdata.foorilla.com).
+7.salary_in_usd:	The salary in USD (FX rate divided by avg. USD rate for the respective year via fxdata.foorilla.com).
 
-8.employee_residence	Employee's primary country of residence in during the work year as an ISO 3166 country code.
+8.employee_residence:	Employee's primary country of residence in during the work year as an ISO 3166 country code.
 
-9.Remote_ratio	The overall amount of work done remotely, possible values are as follows: 0 No remote work (less than 20%) 50 Partially remote 100 Fully remote (more than 80%).
+9.Remote_ratio:	The overall amount of work done remotely, possible values are as follows: 
+0= No remote work (less than 20%) 
+50= Partially remote 
+100= Fully remote (more than 80%).
 
 10.company_location	The country of the employer's main office or contracting branch as an ISO 3166 country code.
 
-11.company_size	The average number of people that worked for the company during the year: S less than 50 employees (small) M 50 to 250 employees (medium) L more than 250 employees (large)
+11.company_size	The average number of people that worked for the company during the year: 
+S= less than 50 employees (small)
+M= 50 to 250 employees (medium) 
+L= more than 250 employees (large)
 
-From this initial summary I notice several issues.There are several potential redundant or irrelevant columns. As I've discussed in my introduction, I'm interested in data scientists' salary as the response variable and utilizing various predictors to determine what are the key factors that determines a data scientist's salary. Although it is nice to understand the currency that all employees in this data set are paid in, the variable salary_in_usd is the only relevant column as I can compare all the salaries in the same currency. Thus, I will remove both salary_currency and salary variables from the dataset, as the information is all contained within salary_in_USD. 
+From this initial summary I notice several issues.There are several potential redundant or irrelevant columns. As I've discussed in my introduction, I'm interested in data scientists' salary as the response variable and utilizing various predictors to determine what are the key factors that determines a data scientist's salary. Although it is nice to understand the currency that all employees in this data set are paid in, the variable salary_in_usd is the only relevant column because I can compare all the salaries in the same currency. Thus, I will remove both salary_currency and salary variables from the dataset, as the information is all contained within salary_in_USD. 
 
 ```{r }
 salary1 <- subset( salary, select = -c(salary,salary_currency) )
 ##View(salary1)
 
+table(salary1$work_year)
 table(salary1$experience_level)
 table(salary1$job_title)
 
@@ -63,30 +77,28 @@ table(salary1$company_location)
 table(salary1$company_size)
 ```
 
-Here, I'm identifying every unique value in the following columns: experience level, job title, and employment type. 
-
+Here, I'm identifying the counts of every variable in the data set so I can get an intial sense of what the data looks like and see how I can appropriately code factors for these variables. Here, I notice a few things. Most of the datasets' observations for work year fall into 2022 and 2023. Here, I have the option to to code as either a continuous or categorical variable. While over a larger a range of years,  I would intuitively recommend coding year as continuous, I know that inflation in this 4 year span was extremely anomalous. According to the federal reserve, inflation in 2020 was only 1.4% due to covid, while 2021 and 2022 were 7% and 6.5% respectively. Here, the wild swings in inflation are non-standard so I think it makes sense to code work_year as a categorical variable with 4 factors so as to compare salaries from each year as a category. Below, I go ahead and code all existing variables with their respective factors. 
 
 ```{r }
 salary1$experience_level <- factor(salary1$experience_level)
-levels(salary1$experience_level) <- c("MI", "SE", "EN", "EX")
+levels(salary1$experience_level) <- c("EN", "Ex", "MI", "SE")
 
 salary1$work_year <- factor(salary1$work_year)
 levels(salary1$work_year) <- c("2020", "2021", "2022", "2023")
 
 salary1$employment_type <- factor(salary1$employment_type)
-levels(salary1$employment_type) <- c("FT", "CT", "FL", "PT")
+levels(salary1$employment_type) <- c("CT", "FL", "FT", "PT")
 
 salary1$remote_ratio <- factor(salary1$remote_ratio)
 levels(salary1$remote_ratio)<- c("0", "50", "100" )
 
 salary1$company_size <- factor(salary1$company_size)
-levels(salary1$company_size)<- c("S", "M", "L" )
+levels(salary1$company_size)<- c("L", "M", "S" )
 
 summary(salary1)
 
 ```
-These last 3 variables provides 
-
+The last 3 variables I need to clean/ recode are job_title, company_location and employee_residence. For company_location and employee residence I'm looking to collapse and consolidate the variable into fewer categories. Given that most observations are from the "US", I believe it makes sense to collapse these variables into US, EU, and other so as to have enough observations for each cateogry and not have standard errors that are too large.  
 
 
 
@@ -152,13 +164,6 @@ for(i in 1:length(salary1$company_location))
   
 }
   
-
-
-
-
-
-
-
 ##View(salary1)
 table(salary1$employee_residence1)
 table(salary1$company_location1)
@@ -167,7 +172,126 @@ salary2<- subset( salary1, select = -c(employee_residence,company_location) )
 View(salary2)
 
 ```
+
 First, I created a text document to match full country names to their 2 letter code names. (See attached .txt doucment in github). After, I match country names to their 2 letter code names, I determined which countries were part of Europe, US/Canada, and not either of the first 2. 
 
 Here, I collapsed the variable of employee residence and company location. First, I create 2 new columns called employee_residence1 and company_location1 as I will append these re-coded values to these new columns. I combined Canada counts with US counts under "US". I believe fundamentally, Canadian tech companies function very similarly to the US, operate under the same language,etc. So even though I don't necessarily believe Canadian data science salaries are homogeneous to US data science salaries, I believe this makes more sense then coding  Canada as "Other".  I also collapsed all European countries into one EU factor and the remaining countries will fall under "OT" or other. From the frequency count after I re-coded both variables I believe this is a reasonable way to re-code the observations. Here, I believe I have enough observations for my standard errors to be reasonable for reach factor. I could further break down the remaining countries geographically, but I'm afraid I have too few observations for these new factors and thus have standard errors that are extremely large. I'm choosing to collapse the variables like this because  the vast majority of the ~3800 observations are from the US/Canada in both cases. Finally, I drop my original data frame columns from the re-coded dataframe.Note: One additional issue I believe I have here is multi-collinearity. The vast majority of people in this data set typically live in the same country as the Company that they work for. Obviously, these variables are not mirrored, but there's very likely some redundancy here. I will verify using a VIF calculation in a later section in this report, but I will likely have to drop either (employee_residence1 or company_location1) in my final model. 
 
+```{r }
+
+salary2$employee_residence1 <- factor(salary2$employee_residence1)
+levels(salary2$employee_residence1)<- c("EU", "OT", "US" )
+
+salary2$company_location1 <- factor(salary2$company_location1)
+levels(salary2$company_location1)<- c("EU", "OT", "US" )
+
+##summary(salary2)
+
+```
+In this step, I assign the appropriate factors for EU,OT. and US.
+
+```{r }
+##install.packages("tidytext")
+library(tidytext)
+library(tidyr)
+library(dplyr)
+
+
+salary2 %>% count(job_title, sort = TRUE)
+
+job_frequency<-data.frame(table(unlist(strsplit(tolower(salary2$job_title), " "))))
+##View(job_frequency)
+
+sorted <- job_frequency[order(-job_frequency$Freq),]
+View(sorted)
+print (sorted)
+
+
+```
+Here, I am doing two separate tasks. First, I am tabulating most frequent job titles. Based on the table, we see Data Engineer, Data Scientist, Data Analyst, Machine Learning Engineer, Analytics Engineer, and Data Architect are the 5 most frequent job titles. I also took the job_title column a step further and found the highest frequency of a singular word in a job title. I also find that the words: data, engineer, scientist, analyst, and learning are most frequent word in a job title for this dataset. Based on these results, I end up choosing to collapse this variable by.........
+
+```{r }
+
+salary2[ , 'employment_type1'] <- NA
+
+
+for(i in 1:length(salary2$employment_type) )
+{ 
+  if(salary2$employment_type[i]=="FT")
+  {
+    salary2$employment_type1[i] <- "FT"
+  }
+  
+  else
+  {
+    salary2$employment_type1[i] <- "PT"
+  }
+    
+  
+  }
+##View(salary2)
+##table( salary2$employment_type1)
+
+salary3<- subset( salary2, select = -c(employment_type ))
+View(salary3)
+
+##table( salary3$employment_type1)
+
+salary3$employment_type1 <- factor(salary3$employment_type1)
+levels(salary3$employment_type1)<- c("FT", "PT" )
+
+summary (salary3)
+
+```
+Here is the last cleaning step I would like to conduct. Given that only 37 observations are not "full time", I want to collapse all other categories that are not "FT" into one a singular "PT" category thus effectively making this variable a binary categorical variable. I believe I have cleaned my data as I have desired and will now move onto exploratory data analysis. 
+
+
+
+
+Section 2: Exploratory Data Analysis.   
+Here, I will dive into the response variable (Salary) and every potential predictor from my cleaned dataset Salary3.
+
+```{r }
+
+hist (salary3$salary_in_usd,  xlab = 'Salary (USD)', ylab = 'Frequency', main = 'Distribution of Data Science Salaries')
+sort (boxplot(salary3$salary_in_usd, ylab= "Salary (USD)", main= "Boxplot of Salary" )$out )
+summary( salary3$salary_in_usd)
+
+
+
+
+```
+Here we have histogram and boxplot of overall Salary. Our 5 point summary statistic shows mean and median of 135,000 USD and 137,570 USD respectively.The histogram shows overall right skew suggesting that there are few instances in which salaries are very high, but the majority of observations are below 200,000. I performed a sort of boxplot outliers and found those ranged from 297,300-450,000 USD. Additionally, the boxplot confirms a right skew. The boxplot suggests that there are up to 64 outliers based on salary alone. For now, I suspect that these large salaries reflect positions of senior executive positions. In my initial model selection, I will include all outliers. In section 4, I will delve deeper into identifying outliers and seeing if keeping or removing outliers produces a better model.    
+
+
+
+```{r }
+
+##boxplots of individual
+boxplot(salary_in_usd ~ work_year, data = salary3, col = "red", xlab = 'Work Year', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Work Year')
+
+```
+This boxplot of work_year confirms many of my intuitions about salaries with each passing year. Here, we see the first quartile, median value, and third quartile salaries increasing for each year. The maximum value of "non-outlier" observations for each year are also increasing. In general, there does seem to be some kind of inflation effect happening. Each year continues to have outliers in roughly the same range. In section 4, I will try to quantify to see if these outliers are mostly attributable to those in executive engineer positions.   
+
+
+```{r }
+
+##boxplots of individual
+boxplot(salary_in_usd ~experience_level, data = salary3, col = "red", xlab = 'Experience Level', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Experience')
+
+
+```
+Here, we have a boxplot of salaries grouped by experience level. 
+
+```{r }
+##exploratory data analysis for Job Title
+
+
+```
+
+```{r }
+##boxplot of remote_ratio
+boxplot(salary_in_usd ~remote_ratio, data = salary3, col = "red", xlab = 'Remote Ratio', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Remote Ratio')
+
+```
+Recall 0= no remote work whereas 100= Fully remote. 
