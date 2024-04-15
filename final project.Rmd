@@ -28,6 +28,7 @@ salary<- read.csv("C:/Users/stone/Documents/Stat 408/Final Project/ds_salaries.c
 View(salary)
 
 summary(salary)
+##print(salary[order(salary$salary_in_usd, decreasing = TRUE), ]   )
 
 ```
 Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and re-code certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
@@ -249,10 +250,10 @@ Here is the last cleaning step I would like to conduct. Given that only 37 obser
 
 
 Section 2: Exploratory Data Analysis.   
-Here, I will dive into the response variable (Salary) and every potential predictor from my cleaned dataset Salary3.
+Here, I will dive into the response variable (Salary) and every potential predictor from my cleaned dataset Salary3.I am looking to get a visual representation of salary based on the groups within each  predictor variable. 
 
 ```{r }
-
+library(dplyr)
 hist (salary3$salary_in_usd,  xlab = 'Salary (USD)', ylab = 'Frequency', main = 'Distribution of Data Science Salaries')
 sort (boxplot(salary3$salary_in_usd, ylab= "Salary (USD)", main= "Boxplot of Salary" )$out )
 summary( salary3$salary_in_usd)
@@ -281,7 +282,7 @@ boxplot(salary_in_usd ~experience_level, data = salary3, col = "red", xlab = 'Ex
 
 
 ```
-Here, we have a boxplot of salaries grouped by experience level. 
+Here, we have a boxplot of salaries grouped by experience level. We see that the interquartile ranges for each experience level does follow as one expects. Entry level has the lowest IQ range, followed by Mid Level, Senior Engineer, and then executive. One would expect that more experience correlates to a higher salary and this trend seems true on a surface level. However, we also see that there are instances of Mid level and Senior Engineer positions that compensation in the same range as very high executive. This suggests that research field and job title may actually contribute to salary more than I expected as there may be certain fields/ job titles with very lucrative compensation even if it is not a executive level position. 
 
 ```{r }
 ##exploratory data analysis for Job Title
@@ -294,4 +295,32 @@ Here, we have a boxplot of salaries grouped by experience level.
 boxplot(salary_in_usd ~remote_ratio, data = salary3, col = "red", xlab = 'Remote Ratio', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Remote Ratio')
 
 ```
-Recall 0= no remote work whereas 100= Fully remote. 
+Recall 0= no remote work whereas 100= Fully remote. On a surface level, it seems those who work remotely and in office have a fairly similar interquartile distribution and overall similar number of outliers on the higher end of salary ranges. However, it does seems that the no remote group has a narrower interquartile region. Those who work at a hybrid remote Company seem to have lower salaries based on median and interquartile values. 
+
+```{r }
+##boxplot of Company size
+boxplot(salary_in_usd ~company_size, data = salary3, col = "green", xlab = 'Company Size', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Company Size')
+
+```
+Here, on a surface level, seems that the distributions Company size seem to differ from each other. Those work at small companies have the lowest median+ interquartile range salaries. Additionally, even the outliers for this group have smaller salaries than the outliers of other groups. Next, the "Large" company group has the second highest median and interquartile range salaries. Additionally, the outliers in this group have higher salaries than those in the small group.Finally, it does seem the Medium Company group has the largest median and interquartile salaries among the 3 groups. The maximum "non-outlier" observation for the Large and Medium group are similar as well. Recall that we did determine that most observations in this data set (3153/3755) fall in the "Medium" category. 
+```{r }
+##boxplot of Company size
+boxplot(salary_in_usd ~company_location1, data = salary3, col = "blue", xlab = 'Company Location', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Company Location')
+
+```
+Here, a boxplot based on Company Location shows us that salries for the US+Canada are much higher than in Europe and the rest of the world. The median and interquartile salaries for this group is higher than the 2 other groups. Additionally, the maximum "non-outlier" salary in this group is higher as well. It does also seem that salaries for Companys in Europe are still higher than the rest of the world ( excluding US+Canada). This boxplot suggests there may be a meaningful relationship between salary and  Company location. I also notice that most high "Outlier" salaries for EU and OT fall well within the non-outlier maximum range for the US group. 
+
+```{r }
+##boxplot of Company size
+boxplot(salary_in_usd ~employment_type1, data = salary3, col = "brown", xlab = 'Employment Type', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Employment Type')
+
+```
+This boxplot doesn't necessarily offer us much insight. The part time group only has 37 observations and intuitively, those who work part time are paid less than full time employees because they are working less. The distribution of salaries for these groups confirms  this fact. 
+
+
+Section 3: Model Building+ Selection. 
+Here, I am going to build the best possible model based on the predictors within this data set. I will still include a full model
+```{r }
+
+
+```
