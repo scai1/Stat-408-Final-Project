@@ -209,7 +209,7 @@ print (sorted)
 
 
 ```
-Here, I am doing two separate tasks. First, I am tabulating most frequent job titles. Based on the table, we see Data Engineer, Data Scientist, Data Analyst, Machine Learning Engineer, Analytics Engineer, and Data Architect are the 5 most frequent job titles. I also took the job_title column a step further and found the highest frequency of a singular word in a job title. I also find that the words: data, engineer, scientist, analyst, and learning are most frequent word in a job title for this dataset. Based on these results, I end up choosing to collapse this variable by.........
+Here, I am doing two separate tasks. First, I am tabulating most frequent job titles. Based on the table, we see Data Engineer, Data Scientist, Data Analyst, Machine Learning Engineer, Analytics Engineer, and Data Architect are the 5 most frequent job titles. I also took the job_title column a step further and found the highest frequency of a singular word in a job title. I also find that the words: data, engineer, scientist, analyst, and learning are most frequent word in a job title for this dataset. Based on these results, I believe I will end up coding top 5-7 words as indicator variables to see if having a specific word or "phrase" in the case of Machine Learning impacts one's salary. 
 
 ```{r }
 
@@ -244,7 +244,159 @@ levels(salary3$employment_type1)<- c("FT", "PT" )
 summary (salary3)
 
 ```
-Here is the last cleaning step I would like to conduct. Given that only 37 observations are not "full time", I want to collapse all other categories that are not "FT" into one a singular "PT" category thus effectively making this variable a binary categorical variable. I believe I have cleaned my data as I have desired and will now move onto exploratory data analysis. 
+Here is another cleaning step I would like to conduct. Given that only 37 observations are not "full time", I want to collapse all other categories that are not "FT" into one a singular "PT" category thus effectively making this variable a binary categorical variable. 
+
+
+Finally, I am going to create a variety of indicator variables that will represent whether a person's job title has a specific word or not. From the previous section where I broke down frequency of job titles and words in job titles, I found Data Engineer, Data Scientist, Data Analyst, Machine Learning Engineer, and Analytics Engineer were 5 most frequent job titles. This means I want to code data,engineer, scientist, analyst, machine learning, analytics, and manager as indicator variables to include in my model. Note for the 5 most common job titles, I would have to code as interaction terms. For example, data:engineer would only return 1 if both data and engineer are in title aka Data Engineer.  
+
+```{r }
+
+salary3[ , 'data_ind'] <- NA
+salary3[ , 'engineer_ind'] <- NA
+salary3[ , 'scientist_ind'] <- NA
+salary3[ , 'analyst_ind'] <- NA
+salary3[ , 'ML_ind'] <- NA
+salary3[ , 'analytics_ind'] <- NA
+salary3[ , 'manager_ind'] <- NA
+
+##View(salary3)
+
+
+##DATA INDICATOR VARIABLE
+
+for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("DATA", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$data_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$data_ind[i] <- 0
+  }
+    
+}
+ ## View( salary3)
+
+  
+##Engineer Indicator Variable
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Engineer", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$engineer_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$engineer_ind[i] <- 0
+  }
+    
+}
+  
+
+
+##Scientist Indicator Variable
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Scientist", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$scientist_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$scientist_ind[i] <- 0
+  }
+    
+}
+ 
+
+
+##Analyst Indicator
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Analyst", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$analyst_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$analyst_ind[i] <- 0
+  }
+    
+}
+ 
+##Machine Learning Indicator
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Machine Learning", salary3$job_title[i] , ignore.case = TRUE )  || grepl("ml", salary3$job_title[i] , ignore.case = TRUE )  )
+  {
+    salary3$ML_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$ML_ind[i] <- 0
+  }
+    
+}
+ 
+table( salary3$ML_ind)
+
+  
+##Analytics Indicator
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Analytics", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$analytics_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$analytics_ind[i] <- 0
+  }
+    
+}
+
+##Manager Indicator
+
+  for(i in 1:length(salary3$job_title) )
+{
+  
+  if(grepl("Manager", salary3$job_title[i] , ignore.case = TRUE ) )
+  {
+    salary3$manager_ind[i] <- 1
+  }
+  
+  else
+  {
+    salary3$manager_ind[i] <- 0
+  }
+    
+}
+
+
+View(salary3)
+
+
+```
+
+I believe I have cleaned my data as I have desired and will now move onto exploratory data analysis. 
 
 
 
@@ -277,7 +429,7 @@ This boxplot of work_year confirms many of my intuitions about salaries with eac
 
 ```{r }
 
-##boxplots of individual
+##boxplots of individual predictors
 boxplot(salary_in_usd ~experience_level, data = salary3, col = "red", xlab = 'Experience Level', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Experience')
 
 
@@ -318,9 +470,47 @@ boxplot(salary_in_usd ~employment_type1, data = salary3, col = "brown", xlab = '
 This boxplot doesn't necessarily offer us much insight. The part time group only has 37 observations and intuitively, those who work part time are paid less than full time employees because they are working less. The distribution of salaries for these groups confirms  this fact. 
 
 
+```{r }
+##boxplot of data indicator
+boxplot(salary_in_usd ~data_ind, data = salary3, col = "brown", xlab = 'Data Indicator', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Data Indicator')
+
+```   
+Here, the boxplot of salaries by Data Indicator variables suggests that the interquartile range and median value of those without data in their job title have higher salaries than those with data in their salaries. However, the group with data in job title has much larger sample size and contains way more of the higher "outlier"  salaries. 
+```{r }
+##boxplot of Engineer indicator
+boxplot(salary_in_usd ~engineer_ind, data = salary3, col = "brown", xlab = 'Engineer Indicator', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Engineer Indicator')
+
+```  
+Here, the boxplot of the engineer indicator variables shows that the interquartile ranges and median values for engineer vs non-engineer are very similar. However, the non-engineers seem to have the outlier large salaries. It is possible that engineers are by nature a medium to senior level position, and precludes the group from having manager/executive level positions which may explain why the outlier high salaries are much less frequent in the engineer group. 
+
+```{r }
+##boxplot of Data+Engineer interaction
+boxplot(salary_in_usd ~data_ind:engineer_ind, data = salary3, col = "brown", xlab = 'Data Engineer Interaction', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Data-Engineer Interaction')
+
+```   
+This is a boxplot of the 
+
 Section 3: Model Building+ Selection. 
 Here, I am going to build the best possible model based on the predictors within this data set. I will still include a full model
 ```{r }
+library(MASS)
+library(car)
+model_full<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+employee_residence1+company_location1+employment_type1+data_ind+engineer_ind+
+                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind, data= salary3)
 
+vif(model_full)
 
 ```
+Here, one of my first biggest suspicion was that employment_type1 and Company_location1 were too similar and  would caue issue of collinearity. A vif test shows that both are above 10 so i need to remove one of them from my mode. I will remove employee location as Company location is slightly more important since Companys are paying their workers. 
+
+
+```{r }
+
+model_full1<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
+                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind, data= salary3)
+
+plot(model_full1)
+summary(model_full1)
+
+```
+Here before I move onto model building through AIC stepwise selection, I need to
