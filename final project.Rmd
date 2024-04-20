@@ -8,14 +8,15 @@ output:
 ---
 Introduction
 
-As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? 
+As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? On a surface level, are there are any predictors in the intial dataset that are redundant or collinear?  
 
 To approach this problem, I am dividing this report into these sections:
 
-1. Data Cleaning+ Collapsing Variables. 
-2. Exploratory data analysis
-3. Model building+ selection
-4. Model refinement (Checking regression assumptions and identifying outliers)
+1. Data Exploration and Preparation.  
+2. Model Building+ Selection
+3. Model refinement (Identifying outliers and checking influenceplots)
+4. Interpretation of Results 
+5. Evaluation and discussion. 
 
 
 
@@ -69,7 +70,7 @@ salary1 <- subset( salary, select = -c(salary,salary_currency) )
 
 table(salary1$work_year)
 table(salary1$experience_level)
-table(salary1$job_title)
+##table(salary1$job_title)
 
 table(salary1$employment_type)
 table(salary1$employee_residence)
@@ -484,14 +485,26 @@ boxplot(salary_in_usd ~engineer_ind, data = salary3, col = "brown", xlab = 'Engi
 Here, the boxplot of the engineer indicator variables shows that the interquartile ranges and median values for engineer vs non-engineer are very similar. However, the non-engineers seem to have the outlier large salaries. It is possible that engineers are by nature a medium to senior level position, and precludes the group from having manager/executive level positions which may explain why the outlier high salaries are much less frequent in the engineer group. 
 
 ```{r }
+##boxplot of Manager indicator
+boxplot(salary_in_usd ~manager_ind, data = salary3, col = "brown", xlab = 'Manager Indicator', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Manager Indicator')
+
+```  
+This boxplot is somewhat suprising. I expected those with manager in their title to have more executive roles since they would be directly in charge of others. I thought this would correspond to some of the higher salaries, but evidently the manager group didn't have any observations among the highest earning salaries in the dataset.This might manifest itself when I model the variable.  
+
+
+
+```{r }
 ##boxplot of Data+Engineer interaction
 boxplot(salary_in_usd ~data_ind:engineer_ind, data = salary3, col = "brown", xlab = 'Data Engineer Interaction', ylab = 'Salary(USD)', main = 'Boxplot of Salary by Data-Engineer Interaction')
 
 ```   
-This is a boxplot of the 
+This is a boxplot of the interaction between Data indicator and Engineer indicator variable. The 1.1 group is the "Data Engineer" group. I notice the interquartile range is very small for this group as if to suggest that salaries for this group are very clustered. There are very few outliers in this group and even then, their salaries aren't necessarily large compared to the entire dataset.It is possible that data engineer is very much a "mid-level" position and the boxplot distribution suggests that.  
+
+I will not present boxplot for every indicator variable/ interaction combination. I just wanted to explore the indicators with most frequent occurrences. 
+
 
 Section 3: Model Building+ Selection. 
-Here, I am going to build the best possible model based on the predictors within this data set. I will still include a full model
+Here, I am going to build the best possible model based on the predictors within this data set. I will still include a full model for reference and compare that to the best model I determine from stepwise selection. 
 ```{r }
 library(MASS)
 library(car)
@@ -501,7 +514,7 @@ model_full<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_s
 vif(model_full)
 
 ```
-Here, one of my first biggest suspicion was that employment_type1 and Company_location1 were too similar and  would caue issue of collinearity. A vif test shows that both are above 10 so i need to remove one of them from my mode. I will remove employee location as Company location is slightly more important since Companys are paying their workers. 
+Here, one of my first biggest suspicion was that employment_type1 and Company_location1 were too similar and  would cause issue of collinearity. A vif test shows that both are above 10 so i need to remove one of them from my model. I will remove employee location as Company location is slightly more important since the Company is paying their workers. 
 
 
 ```{r }
@@ -509,8 +522,116 @@ Here, one of my first biggest suspicion was that employment_type1 and Company_lo
 model_full1<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
                    scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind, data= salary3)
 
-plot(model_full1)
-summary(model_full1)
+model_full2<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
+                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind+ data_ind:engineer_ind+ data_ind:scientist_ind+ data_ind:analyst_ind + ML_ind:engineer_ind+ 
+                    analytics_ind:engineer_ind, data= salary3)
+
+
+
+
+
+plot(model_full2)
+summary(model_full2)
 
 ```
-Here before I move onto model building through AIC stepwise selection, I need to
+Here before I move onto model building through AIC stepwise selection, I need to check my regression assumptions and see if the response variable needs any transformation. 
+Looking at the regression diagnostic plot, I notice issues in every diagnostic plot. The residuals vs fitted plot is exhibiting classic fanning where there residuals grow larger as the fitted salaries get larger. This violates our assumption of homoskedacity. For the QQplot I notice there is heavy right tail in the normality plot (which we already suspect from our histogram plot). This does makes sense as in any industry, those with the highest paying salaries have disproportionately higher salaries than others. Finally, the scale vs location plot is nowhere near horizontal slope. It starts at 0.5 studentized residual distance and ends at 0.8. Finally, if I look at the full modeled I constructed, I have every single indicator variable and then 5 interaction variables between the indicators that represent the 5 most frequently occurring job (i.e Data Engineer or Data Analyst). Here, I notice that all 3 factors of experience level seem to be significant, small company size, company being in the US, employment type, scientist_ind, and the interaction terms data engineer and data scientist seem to be significant predictors in the full model. $R^2$ is fairly low at 0.4004 and adjusted $R^2$ is also low due to the penalty of having so many predictors. In class, for very heavy right skew models we utilized a log transformation on our response variable so as to "scale" and reduce the weight that very high salary outliers would have on the model. 
+
+```{r }
+
+log_fullmodel<- lm ( log(salary_in_usd)~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
+                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind+ data_ind:engineer_ind+ data_ind:scientist_ind+ data_ind:analyst_ind + ML_ind:engineer_ind+ 
+                    analytics_ind:engineer_ind, data= salary3)
+
+
+
+
+plot(log_fullmodel)
+summary(log_fullmodel)
+
+salary3[ , 'log_salary'] <- NA
+##View(salary3)
+
+salary4 <- transform(salary3, log_salary = log(salary_in_usd))
+View(salary4)
+
+```
+Here,I create another column in my data frame so as to obtain log values for salary_in_USD and then regress the full model of the transformed response variable. I look at the regression plot once more and I see improvement in the residuals vs fitted graph. The issues of fanning out is resolved and I would say the assumption of homoskedacity is met here. The QQ plot seems to have made things only slightly better as now there are skews on both tails, but is at least  symmetric. Scale vs location plot doesn't seem to have improved at all. However, a vast majority of observations are within the 11.5-12.0 fitted values range, the red line in that range doesn't really jump studentized residual range (0.7-0.6) and most of the issues of this diagnostic plot lies within the range with much fewer observations. One can consider this graph marginally better. These plots may improve once I've found a simpler and final model. Finally, the adjusted  $R^2$ of the transformed model is meaningfully better at 0.52 vs 0.40. So I believe the log transformation of my response variable is correct. 
+```{r }
+
+backward<- lm ( log_salary~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
+                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind+ data_ind:engineer_ind+ data_ind:scientist_ind+ data_ind:analyst_ind + ML_ind:engineer_ind+ 
+                    analytics_ind:engineer_ind, data= salary4)
+
+
+buildBackward<-stepAIC(backward,direction="backward")
+
+summary(buildBackward)
+vif(buildBackward)
+
+
+```
+Here, I run a first initial backward selection using the StepAIC method. Here, at each step I'm trying to remove a predictor so as to decrease overall AIC of the model, until I reach the smallest AIC value. Here, I then summarize the "best model" that the backward function finds. Here, the adjusted $R^2$ remains essentially unchanged at 0.52.Some of the interaction terms are significant such as Data:Engineer and Data:scientist.Additionally, some of the indicators such as scientist and engineer are significant. However, when I run another VIF test of this model, I realize there are several issues with VIF  and they all seem to relate to using both the indicator variables and their interaction terms together in the same model. Every VIF above 10 indicates issues of col linearity. First, I'm going to remove data_ind and analyst_ind as they were non-significant predictors and see if the VIF of that particular model has fewer issues. 
+
+```{r }
+
+VIF_model1<-lm(formula = log_salary ~ work_year + experience_level + company_size + 
+    company_location1 + employment_type1  + engineer_ind + 
+    scientist_ind  + analytics_ind + manager_ind + 
+    data_ind:engineer_ind + data_ind:scientist_ind + data_ind:analyst_ind, 
+    data = salary4)
+
+summary(VIF_model1)
+vif (VIF_model1)
+
+```
+Here I think ive found best model..........
+
+
+INTERPRETATION: SPEND A COUPLE PARAGRAPHS HERE
+
+
+
+
+
+
+
+
+
+Section 4
+
+```{r }
+
+influencePlot(VIF_model1)
+
+print(salary4[3676,])
+print(salary4[2129,])
+print(salary4[3722,])
+print(salary4[184,])
+print(salary4[3668,])
+print(salary4[2685,])
+
+
+```
+
+
+
+
+
+
+Section 5: Evaluation and discussions 
+
+Overall, there are many constraints that limit the extent we can draw conclusions and model build. 1) I'm only able to include predictors that were available to me within the data set. Even more, I showed that several of these predictors/ response variable were ultimately redundant or had issues of multi-collinearity. 2) My entire model only consists of categorical and indicator variables. Ideally, I  would have preferred to have some continuous predictors within my model. A couple that come to mind are years of experience, number of software certifications,etc. Maybe another important categorical variable is level of education. Although there is no telling if these predictors would necessarily improve the model, they are definitely worth exploring and would alter the strength of my best regression model. 3) A final limitation of the data set were that despite having a large sample size, a lot of a observations were still heavily concentrated around certain categories. I.e a vast majority of observations for Company location were clustered around the US or there were ~1% of the sample that was part time. There may be underlying limitations to which the data was sampled and collected. 
+
+
+The model I ultimately determined, is a fairly strong model in that I  tried to eliminate collinaerity between predictors and the predictors I included in final model were all significant.The final model did have a reasonable strong adjusted $R^2$. However, some of my regression plots even with a transformed response variables still demonstrated some issues. Obviously, in a real life data set, regression assumptions cannot be perfect and small issues may still exist no matter how hard statisticians try to address them. However, I still believe there may be some limitations as I was not able to fully correct them within the scope of this paper. 
+
+
+
+
+If I had more time, I would have attempted to delve deeper into the job title indicators that I created. 
+
+
+
+
+
