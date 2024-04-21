@@ -6,6 +6,10 @@ output:
   pdf_document: default
   html_document: default
 ---
+Repository link: https://github.com/scai1/Stat-408-Final-Project .
+Please refer to repository for version controls for this Rmarkdown, raw data set, final knitted PDF, and country letter code.txt file. 
+
+
 Introduction
 
 As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? On a surface level, are there are any predictors in the initial dataset that are redundant or collinear?  
@@ -24,7 +28,7 @@ Section 1: Data Exploration and Preparation
 Here, I am going to recode, clean, and collapse variables appropriately in a way that will allow me to do analysis as I see fit.
 ```{r }
 
-salary<- read.csv("C:/Users/stone/OneDrive/Documents/Stat 408/Final Project/ds_salaries.csv")
+salary<- read.csv("C:/Users/stone/Documents/Stat 408/Final Project/ds_salaries.csv")
 
 View(salary)
 
@@ -100,7 +104,7 @@ levels(salary1$company_size)<- c("L", "M", "S" )
 summary(salary1)
 
 ```
-The last 3 variables I need to clean/ recode are job_title, company_location and employee_residence. For company_location and employee residence I'm looking to collapse and consolidate the variable into fewer categories. Given that most observations are from the "US", I believe it makes sense to collapse these variables into US, EU, and other so as to have enough observations for each cateogry and not have standard errors that are too large.  
+The last 3 variables I need to clean/ recode are job_title, company_location and employee_residence. For company_location and employee residence I'm looking to collapse and consolidate the variable into fewer categories. Given that most observations are from the "US", I believe it makes sense to collapse these variables into US, EU, and other so as to have enough observations for each category and not have standard errors that are too large.  
 
 
 
@@ -582,20 +586,88 @@ summary(VIF_model1)
 vif (VIF_model1)
 
 ```
-Here I think I've found best model. The backward AIC model gave us a reduced model, but it still had collinearity issues with some of the predictors used. After removing data and analyst indicators from the model, the remaining predictors all have VIF under 10. This final best model still has the same Adjusted $R^2$ as the backward AIC model, but with two fewer predictors as the model now captures the same amount of information without redundant predictors. There is consideration to reduce the model even further, but given that all the predictors in this model have significant pvalues for at least of one the indicators, I am inclined to not reduce model any further.  
+Here I think I've found best model. The backward AIC model gave us a reduced model, but it still had collinearity issues with some of the predictors used. After removing "Data and analyst" indicators from the model, the remaining predictors all have VIF under 10. What this indicates is that outside of job titles of "Data Analyst", "Data Engineer" or "Data scientist", the words "Data" or "Analyst" appears infrequently. So by including the interacted terms, I almost completely encapsulate all instances of both "data" and "analyst" so there is no need to include both of those indicator word variables as they are redundant. 
+
+This final best model still has the same Adjusted $R^2$ as the backward AIC model, but with two fewer predictors as the model now captures the same amount of information without redundant predictors. There is consideration to reduce the model even further, but given that all the predictors in this model have significant p-values for at least of one the indicators, I am inclined to not reduce model any further.  
 
 Section 3 INTERPRETATION: 
 
--Recall that we used a log transformation for our response variable. So taking $e^\beta$ will get us the transformed effects of the regression coefficients from our best model. The intercept represents the base level salary. Essentially, every categorical variable we used here leaves out one category as a comparison in the regression. So the intercept salary of e^10.7526= 45,506 represents the expected salary of someone working in 2020, with an entry level job, working at a large company, who company is based in EU, who works a full time job, and whose job title DOES NOT INCLUDE engineer, scientist, analytics, manager and IS NOT a data engineer, or data scientist, or data analyst. Essentially, the base salary reflects the comparison group salary across every predictor utilized.  
+-Recall that we used a log transformation for our response variable. So taking $e^\beta$ will get us the transformed effects of the regression coefficients from our best model. The intercept represents the base level salary. Essentially, every categorical variable we used here leaves out one category as a comparison in the regression. So the intercept salary of e^10.7526= 45,506 represents the expected salary of someone working in 2020, with an entry level job, working at a large company, whose company is based in EU, who works a full time job, and whose job title DOES NOT INCLUDE engineer, scientist, analytics, manager and IS NOT a data engineer, or data scientist, or data analyst. Essentially, the base salary reflects the comparison group salary across every predictor utilized.  
 
--For work year, since the base year ( or category that is not included in output) is 2020. The coefficients work_year 2021, 2022, 2023 can be interpreted as the expected difference in salary when COMPARED to 2020. For example, someone in 2023 can expect to make e^0.1107 = 
-
-
-
+-Recall our model here is given by:
+$ln(y)$ = $\beta_0$+ $\beta_{workyear2021}*x_1$ + $\beta_{workyear2022}*x_2$ + $\beta_{workyear2023}*x_3$+ $\beta_{experiencelevelEX}*x_4$+ $\beta_{experiencelevelMI}*x_5$ + $\beta_{experiencelevelSE}*x_6$ + $\beta_{companysizeM}*x_7$ + $\beta_{companysizeS}*x_8$+  $\beta_{companylocationOT}*x_9$+ $\beta_{companylocationUS}*x_{10}$ + $\beta_{employmenttypePT}*{x_11}$ + $\beta_{engineer}*x_{12}$+ $\beta_{scientist}*x_{13}$+ $\beta_{analytics}*x_{14}$+ $\beta_{manager}*x_{15}$ +  $\beta_{dataengineer}*x_{16}$ + $\beta_{datascientist}*x_{17}$ + $\beta_{dataanalyst}*x_{18}$
 
 
 
+Where x1, x2,.. x18 are all indicator variables taking the value of 1 if the observation has that particular attribute or zero if not. 
 
+If we exponentiate both sides we get y = exp ^ (beta_0+beta_{workyear2021}*x_1+.....) 
+
+Which is equivalent to  y = exp^(beta_0) * exp^(beta_{workyear2021}* x_1) *..... 
+
+This essentially means the coefficients in the R output for the model represents a MULTIPLIER for each $\beta$. Thus, expected salary can be found by multiplying these regression coefficients against $\beta_0$.
+
+-For work year, since the base year ( or category that is not included in output) is 2020. The coefficients work_year 2021, 2022, 2023 can be interpreted as the expected MULTIPLIER in salary when COMPARED to 2020. 
+
+work_year2021: exp (-0.03968) = 0.961. Here, when compared to 2020, a salary in 2021 is expected to be 0.961 times that of 2020. This indicator variable is not significant. 
+
+work_year2022: exp (0.05602) = 1.058. Compared to 2020, a salary in 2022 is expected to be 1.058 times or 5.8% in crease that of 2020. This indicator variable is not significant. 
+
+work_year2023: exp(0.1107) = 1.117. Compared to 2020, a salary in 2023 is expected to have 11.7% increase. There is a significant difference for a salary in 2023, compared to that in 2020.  
+
+
+-For experience level, the comparison category is entry level. The coefficients experience_levelEX, experience_levelMI, experience_levelSE represents the expected MULTIPLIER in salary when compared to an entry level position. Note: The R output shows that the pvalue for each of these coefficents is nearly zero and are significannt. 
+
+
+experience_levelEX: exp (0.7665) = 2.152. Compared to an entry-level position, an Executive is expected to make 2.152x or 115% more. 
+
+experience_levelMI: exp (0.30305) = 1.354. Compared to an entry level position, a mid level position is expected to make 35.4% more. 
+
+experience_levelSE: exp (0.49517) = 1.6408. Compared to an entry level position, a senior level engineer is expected to make 64.1% more. 
+
+
+-For company size, the comparison category is Large company. The coefficients company_sizeM and company_sizeS represents the expected MULTIPLIER in salary when compared to a 
+
+company_sizeM: exp (-0.012) = 0.988. Compared to a large Company, a job from medium Company is expected to make 1.2% less. There is not a signficant difference here. 
+
+company_sizeS: exp (-0.19576) = 0.822. Compared to a large Company, a job from a small company is expected to make 17.8% less. There is a strong significant difference in salary for this regression coefficient. 
+
+
+
+-For Company location, the comparison category is EU. The coefficients Company_location US and Company_locationOT represents the expected MULTIPLIER in salary when compared to Company located in EU. Both of these coefficients are significant with nearly 0 pvalue.  
+
+company_locationOT: exp (-0.040597) = 0.96. Compared to a Company from the EU, a country not from US or EU is expected to make 4% less. 
+
+company_locationUS: exp (0.6507) = 1.917. Compared to a Company from the EU, a Company is the US is expected to make 91.7% more. 
+
+employment_typePT:exp (-0.53076) = 0.588. Compared to a full time job, a part time job is expected to make 41.2% less. This is a significant predictor with nearly zero pvalue. 
+
+
+-For job title word indicators, these are all binary indicator variables, so the coefficients represent the expected MULTIPLIER in having the key word indicator vs not having the keyword in one's job title. 
+
+engineer_ind: exp (0.13967) = 1.150. Compared to a non-engineer, an engineer is expected to make 15% more. There is a significant difference here.  
+
+scientist_ind: exp (0.1805) = 1.198. Compared to a non-scientist, a job title with scientist is expcted to make 19.8% more. There is a significant difference here. 
+
+analytics_ind: exp (-0.013486) = 0.987. Compared to a non-analytics job, a job title with analytics is expected to make 1.3% less. There is a strong significant difference. 
+
+manager_ind: exp (0.12326) = 1.131. Compared to a non-manager job, a job title with manager is expected to make 13.1% more. There is a strong significant difference. 
+
+-For interacted job  title indicators, these can be interpreted as the expected MULTIPLIER in salary in having both key words compared to not having both keywords in one's job title. All of these interacted terms have nearly zero pvalue and have strong significance. 
+
+data:engineer- exp(-0.16241) = 0.85. Compared to a non-data engineer job, a data engineer job is expected to make 15% less. 
+
+data:scientist- exp(-0.17470) = 0.8397. Compared to a non-data scientist job, a data scientist role is expected to make 16% less. 
+
+data:analyst- exp (-0.26648) = 0.766. Compared to a non-data analyst role, a data analyst role is expected to make 23.4 % less. 
+
+For practical purposes, I can use this model to predict expectations for various data science roles. Let say I wanted to predict the salary of a future job that would be an entry level role, at a medium size company, in the US, working full time, and for role title "Data Analyst". This could be calculated as $45,506 * (1.117)* (0.988)* (1.917)*(0.766) = 73,744 USD. (I use work_year 2023 as a best proxy for current year salary expectations). 
+
+Take another example,an Executive role, at a large Company, in the US, working full time, with manager title can expect to make $45,506* (1.117)* (2.152) * (1.917) * 1.131 = 237,164 USD.   
+
+Based on these regression outputs, I think anyone applying to a data science role could use these outputs and same interpretation methodology to see what salary expectations are. 
+
+Overall, this model is fairly strong, but isn't quite perfect either. An adjusted $R^2$ of 0.5267 is fairly strong, but not every indicator within this model is significant. Only work_year 2023 indicator from the work_year predictor is significant, but I still want to include this predictor since a large number of observations are from this year. The only other non-significant indicator is large_companyM, but otherwise all other predictors I included seem to be significant.  The predictive power of this model is fairly strong as I can predict salary based on job title/ role attributes. Note, that the best proxy for predicting current salaries for work_year is to use 2023 as a proxy especially since I coded work_year as a categorical variable. Obviously, there are some limitations in my model. For example, I could imagine an extremely niche job title that is extremely lucrative and pays near executive level salary, might be under predicted in this model to have a lower salary than it should. However, if there is a common data science role with a common title and standard attributes ( full time, in the US,etc) than I believe my model should have a very strong prediction/ predictive power.   
 
 Section 4: Model Refinement
 
@@ -603,16 +675,8 @@ Section 4: Model Refinement
 
 influencePlot(VIF_model1)
 
-print(salary4[3676,])
-print(salary4[2129,])
-print(salary4[3722,])
-print(salary4[184,])
-print(salary4[3668,])
-print(salary4[2685,])
+print(salary4[c(84,2379,2681,2685,3668,184,3722,2129,3676),])
 
-print(salary4[2681,])
-print(salary4[2379,])
-print(salary4[84,])
 
 
 ```
@@ -675,6 +739,6 @@ I don't believe other approaches could have been taken given the scope of the va
 
 If I had more time, I would have attempted to delve deeper into the job title indicators that I created. I only was able create indicators for the most frequently occurring words which often represent mid-level positions. I suspect there may be certain words in job titles that reflect more lucrative salaries.Additionally, I assumed that the number of observations may have been too small to get reasonable standard errors for Company_location had I broken out the location of counties even more than just US, EU, and other. Although, I don't think it would drastically alter my model, these are a couple examples of deeper analysis in the future.Also, if I could collect more data and observations across a large range of years, I think that would lend work_year to being coded as a a continuous variable, and the regression coefficient of that variable could then be interpreted as " average inflation effect" for each unit increase in year. 
 
-With these findings, I have shown that there are a number of variables that are significant in determining salary. The year in which one applies for a position in itself matters. While in this data set, I coded year as categorical and can only draw concrete conclusions for the years included in this model, there is certainly an inflation adjustment that needs to be considered. Experience level, Company size, Company location, and employment type were all shown to be significant predictors in my model. Finally, having certain key word or combination of words  in job title was also shown to being a significant predictor. The implications of these results could help those applying for data science positions. Ultimately, one would just have to ask themselves what attributes they fit under to see what their expected salary would look like. For example, I personally might be applying to a large company, full time, at an entry level position, in the US. If I figure out what my job position would be, I can interpet the regression model above accordingly and figure out my expected salary. Someone else with different qualifications working somewhere else could use the same steps to figure out their expected salary,etc. Overall, models like these help give transparency for salary expectations and can give people expectations before even applying. 
+With these findings, I have shown that there are a number of variables that are significant in determining salary. The year in which one applies for a position in itself matters. While in this data set, I coded year as categorical and can only draw concrete conclusions for the years included in this model, there is certainly an inflation adjustment that needs to be considered. Experience level, Company size, Company location, and employment type were all shown to be significant predictors in my model. Finally, having certain key word or combination of words  in job title was also shown to being a significant predictor. The implications of these results could help those applying for data science positions. Ultimately, one would just have to ask themselves what attributes they fit under to see what their expected salary would look like. For example, I personally might be applying to a large company, full time, at an entry level position, in the US. If I figure out what my job position would be, I can interpret the regression model above accordingly and figure out my expected salary. Someone else with different qualifications working somewhere else could use the same steps to figure out their expected salary,etc. Overall, models like these help give transparency for salary expectations and can give people expectations before even applying to data science roles.  
 
 
