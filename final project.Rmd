@@ -8,23 +8,23 @@ output:
 ---
 Introduction
 
-As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? On a surface level, are there are any predictors in the intial dataset that are redundant or collinear?  
+As someone pursuing a masters in applied statistics with the goal of a career change, it is an intriguing to question the career opportunities available after finishing this degree. What kind of salary and compensation can one expect if pursuing a career in data science/data analyst,etc? For this final project, I am considering a ds_salaries dataset which tracks the salaries of n= 3755 data science related careers from the years 2020-2023. I hope to get a general sense of the salaries and compensation expectations of data science related careers. Additionally, I hope to answer questions such as which factors/attributes are significant contributors to overall salary? What is the best model from among the dataset's variables that best explains salary expectations? On a surface level, are there are any predictors in the initial dataset that are redundant or collinear?  
 
 To approach this problem, I am dividing this report into these sections:
 
 1. Data Exploration and Preparation.  
 2. Model Building+ Selection
-3. Model refinement (Identifying outliers and checking influenceplots)
-4. Interpretation of Results 
+3. Interpretation of Results
+4. Model refinement (Identifying outliers and checking influenceplots)
 5. Evaluation and discussion. 
 
 
 
-Section 1: Data Cleaning and Collapsing Variables
+Section 1: Data Exploration and Preparation 
 Here, I am going to recode, clean, and collapse variables appropriately in a way that will allow me to do analysis as I see fit.
 ```{r }
 
-salary<- read.csv("C:/Users/stone/Documents/Stat 408/Final Project/ds_salaries.csv")
+salary<- read.csv("C:/Users/stone/OneDrive/Documents/Stat 408/Final Project/ds_salaries.csv")
 
 View(salary)
 
@@ -32,7 +32,7 @@ summary(salary)
 ##print(salary[order(salary$salary_in_usd, decreasing = TRUE), ]   )
 
 ```
-Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and re-code certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
+I am using the data set ds_salaries from Kaggle.com,which tracked data science salaries from 2020-2023. Here, I have entered the data science salaries data set. From the initial summary of the dataset, I will determine how I need to clean data and re-code certain columns that I may want to use as predictors in a linear model. Here, I summarize the variables from the data card for the data set. 
 
 1.work_year:	The year the salary was paid.
 
@@ -79,7 +79,7 @@ table(salary1$company_location)
 table(salary1$company_size)
 ```
 
-Here, I'm identifying the counts of every variable in the data set so I can get an intial sense of what the data looks like and see how I can appropriately code factors for these variables. Here, I notice a few things. Most of the datasets' observations for work year fall into 2022 and 2023. Here, I have the option to to code as either a continuous or categorical variable. While over a larger a range of years,  I would intuitively recommend coding year as continuous, I know that inflation in this 4 year span was extremely anomalous. According to the federal reserve, inflation in 2020 was only 1.4% due to covid, while 2021 and 2022 were 7% and 6.5% respectively. Here, the wild swings in inflation are non-standard so I think it makes sense to code work_year as a categorical variable with 4 factors so as to compare salaries from each year as a category. Below, I go ahead and code all existing variables with their respective factors. 
+Here, I'm identifying the counts of every variable in the data set so I can get an intial sense of what the data looks like and see how I can appropriately code factors for these variables. Here, I notice a few things. Most of the datasets' observations for work year fall into 2022 and 2023. Here, I have the option to to code as either a continuous or categorical variable. While over a larger a range of years,  I would intuitively recommend coding year as continuous, I know that inflation in this 4 year span was extremely anomalous. According to the federal reserve, inflation in 2020 was only 1.4% due to covid, while 2021 and 2022 were 7% and 6.5% respectively. Here, the swings in inflation are non-standard so I think it makes sense to code work_year as a categorical variable with 4 factors so as to compare salaries from each year as a category. Below, I go ahead and code all existing variables with their respective factors. 
 
 ```{r }
 salary1$experience_level <- factor(salary1$experience_level)
@@ -402,7 +402,7 @@ I believe I have cleaned my data as I have desired and will now move onto explor
 
 
 
-Section 2: Exploratory Data Analysis.   
+Section 1b) Exploratory Data Analysis.   
 Here, I will dive into the response variable (Salary) and every potential predictor from my cleaned dataset Salary3.I am looking to get a visual representation of salary based on the groups within each  predictor variable. 
 
 ```{r }
@@ -503,7 +503,7 @@ This is a boxplot of the interaction between Data indicator and Engineer indicat
 I will not present boxplot for every indicator variable/ interaction combination. I just wanted to explore the indicators with most frequent occurrences. 
 
 
-Section 3: Model Building+ Selection. 
+Section 2: Model Building+ Selection. 
 Here, I am going to build the best possible model based on the predictors within this data set. I will still include a full model for reference and compare that to the best model I determine from stepwise selection. 
 ```{r }
 library(MASS)
@@ -519,11 +519,8 @@ Here, one of my first biggest suspicion was that employment_type1 and Company_lo
 
 ```{r }
 
-model_full1<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
-                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind, data= salary3)
 
-model_full2<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+
-                   scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind+ data_ind:engineer_ind+ data_ind:scientist_ind+ data_ind:analyst_ind + ML_ind:engineer_ind+ 
+model_full2<- lm (salary_in_usd~work_year+experience_level+remote_ratio+company_size+company_location1+employment_type1+data_ind+engineer_ind+ scientist_ind+ analyst_ind+ML_ind+analytics_ind+ manager_ind+ data_ind:engineer_ind+ data_ind:scientist_ind+ data_ind:analyst_ind + ML_ind:engineer_ind+ 
                     analytics_ind:engineer_ind, data= salary3)
 
 
@@ -534,7 +531,7 @@ plot(model_full2)
 summary(model_full2)
 
 ```
-Here before I move onto model building through AIC stepwise selection, I need to check my regression assumptions and see if the response variable needs any transformation. 
+The full model I fit here includes every predictor, every job_title word indicator that I created in section 1, and then the interaction terms of job titles for the 5 most popular job titles in the data set. (i.e, data engineer, data scientist,etc). Here before I move onto model building through AIC stepwise selection, I need to check my regression assumptions and see if the response variable needs any transformation. 
 Looking at the regression diagnostic plot, I notice issues in every diagnostic plot. The residuals vs fitted plot is exhibiting classic fanning where there residuals grow larger as the fitted salaries get larger. This violates our assumption of homoskedacity. For the QQplot I notice there is heavy right tail in the normality plot (which we already suspect from our histogram plot). This does makes sense as in any industry, those with the highest paying salaries have disproportionately higher salaries than others. Finally, the scale vs location plot is nowhere near horizontal slope. It starts at 0.5 studentized residual distance and ends at 0.8. Finally, if I look at the full modeled I constructed, I have every single indicator variable and then 5 interaction variables between the indicators that represent the 5 most frequently occurring job (i.e Data Engineer or Data Analyst). Here, I notice that all 3 factors of experience level seem to be significant, small company size, company being in the US, employment type, scientist_ind, and the interaction terms data engineer and data scientist seem to be significant predictors in the full model. $R^2$ is fairly low at 0.4004 and adjusted $R^2$ is also low due to the penalty of having so many predictors. In class, for very heavy right skew models we utilized a log transformation on our response variable so as to "scale" and reduce the weight that very high salary outliers would have on the model. 
 
 ```{r }
@@ -571,7 +568,7 @@ vif(buildBackward)
 
 
 ```
-Here, I run a first initial backward selection using the StepAIC method. Here, at each step I'm trying to remove a predictor so as to decrease overall AIC of the model, until I reach the smallest AIC value. Here, I then summarize the "best model" that the backward function finds. Here, the adjusted $R^2$ remains essentially unchanged at 0.52.Some of the interaction terms are significant such as Data:Engineer and Data:scientist.Additionally, some of the indicators such as scientist and engineer are significant. However, when I run another VIF test of this model, I realize there are several issues with VIF  and they all seem to relate to using both the indicator variables and their interaction terms together in the same model. Every VIF above 10 indicates issues of col linearity. First, I'm going to remove data_ind and analyst_ind as they were non-significant predictors and see if the VIF of that particular model has fewer issues. 
+Here, I run a first initial backward selection using the StepAIC method. Here, at each step I'm trying to remove a predictor so as to decrease overall AIC of the model, until I reach the smallest AIC value. Here, I then summarize the "best model" that the backward function finds. The backward AIC model has adjusted $R^2$ essentially unchanged at 0.52.Some of the interaction terms are significant such as Data:Engineer and Data:scientist.Additionally, some of the indicators such as scientist and engineer are significant. However, when I run another VIF test of this model, I realize there are several issues with VIF  and they all seem to relate to using both the indicator variables and their interaction terms together in the same model. Every VIF above 10 indicates issues of collinearity. First, I'm going to remove data_ind and analyst_ind as they were non-significant predictors and see if the VIF of that particular model has fewer issues. 
 
 ```{r }
 
@@ -585,20 +582,22 @@ summary(VIF_model1)
 vif (VIF_model1)
 
 ```
-Here I think ive found best model..........
+Here I think I've found best model. The backward AIC model gave us a reduced model, but it still had collinearity issues with some of the predictors used. After removing data and analyst indicators from the model, the remaining predictors all have VIF under 10. This final best model still has the same Adjusted $R^2$ as the backward AIC model, but with two fewer predictors as the model now captures the same amount of information without redundant predictors. There is consideration to reduce the model even further, but given that all the predictors in this model have significant pvalues for at least of one the indicators, I am inclined to not reduce model any further.  
 
+Section 3 INTERPRETATION: 
 
-INTERPRETATION: SPEND A COUPLE PARAGRAPHS HERE
+-Recall that we used a log transformation for our response variable. So taking $e^\beta$ will get us the transformed effects of the regression coefficients from our best model. The intercept represents the base level salary. Essentially, every categorical variable we used here leaves out one category as a comparison in the regression. So the intercept salary of e^10.7526= 45,506 represents the expected salary of someone working in 2020, with an entry level job, working at a large company, who company is based in EU, who works a full time job, and whose job title DOES NOT INCLUDE engineer, scientist, analytics, manager and IS NOT a data engineer, or data scientist, or data analyst. Essentially, the base salary reflects the comparison group salary across every predictor utilized.  
 
-
-
-
-
-
+-For work year, since the base year ( or category that is not included in output) is 2020. The coefficients work_year 2021, 2022, 2023 can be interpreted as the expected difference in salary when COMPARED to 2020. For example, someone in 2023 can expect to make e^0.1107 = 
 
 
 
-Section 4
+
+
+
+
+
+Section 4: Model Refinement
 
 ```{r }
 
@@ -611,11 +610,57 @@ print(salary4[184,])
 print(salary4[3668,])
 print(salary4[2685,])
 
+print(salary4[2681,])
+print(salary4[2379,])
+print(salary4[84,])
+
 
 ```
+In this step, after I have determined my best model and interpreted its results, it is helpful to refine the model by looking at potential outliers. I produce an influence plot of my best model to identify large influence points. Recall that influence is a measure of both leverage and how much of an outlier a point is. Points that are very far right on the x-axis have large leverage and points with large absolute value studentized residuals can be considered outliers from the model.The influence plot has identified 6 points worth exploring and the regression assumptions plots I conducted earlier in section 2 also identified 3 additional points that might be outliers. I will individually explore each point and comment on whether I would keep the data observation. 
+
+Point 3676: This was likely flagged as a high influence point as this is one of the highest earning salaries in the entire data set. It has high leverage based on sheer salary amount and the salary is likely an outlier based on the fact it was coded as a Part time job. It is likely an error that this observation was coded as part time job, but since I cannot confirm, I would remove this observation. 
+
+Point 2129: This is a large leverage, but not an outlier point. This is a part-time, entry level position so $50k salary doesn't seem contextually abnormal. It is a large leverage point as this is one of the lowest salaries in the dataset, but I wouldn't remove from dataset since it isn't an outlier. 
+
+
+Point 3733: A senior engineer making $60k working part time. Again, this is a large leverage observation not an outlier. 60k is one of the lower salaries in the entire data set, but its feasible that a senior engineer would only make this much given a part time status. I wouldn't remove this observation. 
+
+Point 184: I would remove this observation. Given that the company is in the US, it is not possible that a Full time employee would only be making $15k salary. This observation was likely coded incorrectly, so it'd be better to drop this data point. 
+
+
+Point 3668: Again, a FT employee for a Company in the US could not possibly be making a $6k salary. I would drop this observation. 
+
+Point 2685: A FT time employee working for an EU company could not contextually make $5,132 salary. I would drop this observation. 
+
+These below point were identified by the regression assumption plots as possible outliers. 
+
+Point 2681: This might just be an outlier because this is one of the highest salaries for a Company location "OT". I would keep this observation as contextually, a full time senior level engineer could make $200k. 
+
+Point 2379: $12k salary for a Part time entry level position seems reasonable.There is nothing obvious about this observation that would make it an outlier. I would keep this observation. 
+
+Point 84: The only thing that makes this an outlier is that this is coded as entry level position with salary of $300k. This is not a US company salary. This seems pretty outside the compensation range of the lowest experience level. I would also drop this point from the dataset. 
 
 
 
+
+```{r }
+
+#remove 84th, 184, 3668, and 3676 rows. 
+salary5 <- salary4[-c(84, 184, 3668, 3676), ]
+
+View(salary5)
+
+VIF_model1<-lm(formula = log_salary ~ work_year + experience_level + company_size + 
+    company_location1 + employment_type1  + engineer_ind + 
+    scientist_ind  + analytics_ind + manager_ind + 
+    data_ind:engineer_ind + data_ind:scientist_ind + data_ind:analyst_ind, 
+    data = salary5)
+
+summary(VIF_model1)
+
+
+```
+In all, there are 4 points I would drop from above. Here, I remove the outlier observations I want to drop and rerun the same best regression model that I used earlier. The interpretation of coefficients is the same as above so I will not go through that again, but the adjusted $R^2$ of the model did improve to 0.5368. Obviously, dropping 4 points isn't enough to change the significance of the predictors I utilized, but the fit of the model definitely had meaningful improvement.   
 
 
 
@@ -625,13 +670,11 @@ Overall, there are many constraints that limit the extent we can draw conclusion
 
 
 The model I ultimately determined, is a fairly strong model in that I  tried to eliminate collinaerity between predictors and the predictors I included in final model were all significant.The final model did have a reasonable strong adjusted $R^2$. However, some of my regression plots even with a transformed response variables still demonstrated some issues. Obviously, in a real life data set, regression assumptions cannot be perfect and small issues may still exist no matter how hard statisticians try to address them. However, I still believe there may be some limitations as I was not able to fully correct them within the scope of this paper. 
+I don't believe other approaches could have been taken given the scope of the variables available to me. I believe salary as the response variables with categorical predictors was the only feasible approach. I transformed the response  variable based on regression assumption plots. I believe the only alternative approach is just to dive deeper in my usage of job title indicator variables or collapsing variables differently ( see below). 
 
 
+If I had more time, I would have attempted to delve deeper into the job title indicators that I created. I only was able create indicators for the most frequently occurring words which often represent mid-level positions. I suspect there may be certain words in job titles that reflect more lucrative salaries.Additionally, I assumed that the number of observations may have been too small to get reasonable standard errors for Company_location had I broken out the location of counties even more than just US, EU, and other. Although, I don't think it would drastically alter my model, these are a couple examples of deeper analysis in the future.Also, if I could collect more data and observations across a large range of years, I think that would lend work_year to being coded as a a continuous variable, and the regression coefficient of that variable could then be interpreted as " average inflation effect" for each unit increase in year. 
 
-
-If I had more time, I would have attempted to delve deeper into the job title indicators that I created. 
-
-
-
+With these findings, I have shown that there are a number of variables that are significant in determining salary. The year in which one applies for a position in itself matters. While in this data set, I coded year as categorical and can only draw concrete conclusions for the years included in this model, there is certainly an inflation adjustment that needs to be considered. Experience level, Company size, Company location, and employment type were all shown to be significant predictors in my model. Finally, having certain key word or combination of words  in job title was also shown to being a significant predictor. The implications of these results could help those applying for data science positions. Ultimately, one would just have to ask themselves what attributes they fit under to see what their expected salary would look like. For example, I personally might be applying to a large company, full time, at an entry level position, in the US. If I figure out what my job position would be, I can interpet the regression model above accordingly and figure out my expected salary. Someone else with different qualifications working somewhere else could use the same steps to figure out their expected salary,etc. Overall, models like these help give transparency for salary expectations and can give people expectations before even applying. 
 
 
